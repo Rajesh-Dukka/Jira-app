@@ -11,6 +11,12 @@
       "emailId": "ganesh@gmail.com",
       "fullName": "Ganesh Bade",
       "password": "@5678"
+    },
+    {
+      "userId": 3,
+      "emailId": "admin@gmail.com",
+      "fullName": "Admin",
+      "password": "@3022"
     }
   ],
   "routes": {

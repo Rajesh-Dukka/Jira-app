@@ -1,4 +1,3 @@
-// board.ts
 import { Component, OnInit } from '@angular/core';
 import { TicketsService } from 'src/app/services/tickets.service';
 import { NgZone } from '@angular/core';
@@ -27,7 +26,7 @@ export class BoardComponent implements OnInit {
   Progress: any[] = [];
   done: any[] = [];
   ticketsArray: any[] = [];
-  status: string[] = ['To Do', 'In Progress', 'Done'];
+  statusList: string[] = ['To Do', 'In Progress', 'Done'];
   doneList: any[] = [];
   todoList: any[] = [];
   inProgressList: any[] = [];
@@ -40,32 +39,29 @@ export class BoardComponent implements OnInit {
     private zone: NgZone,
     private cdr: ChangeDetectorRef
   ) {}
-  // board: Board = new Board('Test Board', [
-  //   new Column('Ideas', [
-  //     "Some random idea",
-  //     "This is another random idea",
-  //     "build an awesome application"
-  //   ]),
-  //   new Column('Research', [
-  //     "Lorem ipsum",
-  //     "foo",
-  //     "This was in the 'Research' column"
-  //   ]),
-  //   new Column('Todo', [
-  //     'Get to work',
-  //     'Pick up groceries',
-  //     'Go home',
-  //     'Fall asleep'
-  //   ]),
-  //   new Column('Done', [
-  //     'Get up',
-  //     'Brush teeth',
-  //     'Take a shower',
-  //     'Check e-mail',
-  //     'Walk dog'
-  //   ])
-  // ]);
 
+  getTasksByStatus(status: string): any[] {
+    switch (status) {
+      case 'To Do':
+        return this.todo;
+      case 'In Progress':
+        return this.Progress;
+      case 'Done':
+        return this.done;
+      default:
+        return [];
+    }
+  }
+
+  // deleteTicket(ticket: any) {
+  //   if (this.todo.includes(ticket)) {
+  //     this.todo = this.todo.filter((item) => item !== ticket);
+  //   } else if (this.Progress.includes(ticket)) {
+  //     this.Progress = this.Progress.filter((item) => item !== ticket);
+  //   } else if (this.done.includes(ticket)) {
+  //     this.done = this.done.filter((item) => item !== ticket);
+  //   }
+  // }
   ngOnInit() {
     this.ticketService.projectTicketsArray$.subscribe((tickets) => {
       this.ticketsArray = tickets;
@@ -84,48 +80,6 @@ export class BoardComponent implements OnInit {
       console.log('ngOnInit', this.ticketsArray);
     });
   }
-  //  filterTickets(status:string){
-  //   return this.ticketsArray.filter(m=>m.status==status);
-  //  }
-  //  onDragStart(event:any,item:any){
-  //   console.log('onDragStart')
-  //   this.currentItem = item;
-  //   event.dataTransfer?.setData('text/plain', '');
-  //   console.log("currrentItem",this.currentItem)
-  //  }
-  //  onDrop(event:any,status:string){
-  //   console.log('onDrop')
-  //   event.preventDefault();
-  //   const record = this.ticketsArray.find(m=>m.ticketId==this.currentItem.ticketId);
-  //   console.log("record",record)
-  //   if(record!=undefined){
-  //     record.status = status;
-  //   }
-  //   this.currentItem=null;
-  //  }
-  //  onDragOver(event:any){
-  //   console.log('onDragOver')
-  //   event.preventDefault();
-  //  }
-  // drop(event: CdkDragDrop<string[]>) {
-  //   console.log('Drop event:', event);
-  //   console.log('Previous Container Data:', event.previousContainer.data);
-  //   console.log('Current Container Data:', event.container.data);
-  //   this.zone.run(() => {
-  //     this.cdr.detectChanges();
-  //   console.log('Drop event:', event);
-  //   if (event.previousContainer === event.container) {
-  //     moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
-  //   } else {
-  //     transferArrayItem(
-  //       event.previousContainer.data,
-  //       event.container.data,
-  //       event.previousIndex,
-  //       event.currentIndex,
-  //     );
-
-  //     }})
-  //     console.log('Done processing drop event.');}
 
   drop(event: CdkDragDrop<string[]>) {
     if (event.previousContainer === event.container) {
