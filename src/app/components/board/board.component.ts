@@ -1,51 +1,47 @@
 import { Component, OnInit } from '@angular/core';
 import { TicketsService } from 'src/app/services/tickets.service';
-import { NgZone } from '@angular/core';
-import { ChangeDetectorRef } from '@angular/core';
+import { Router } from '@angular/router';
 import {
   CdkDragDrop,
-  CdkDrag,
-  CdkDropList,
-  CdkDropListGroup,
   moveItemInArray,
   transferArrayItem,
 } from '@angular/cdk/drag-drop';
-export class Column {
-  constructor(public name: string, public tasks: any[]) {}
-}
-export class Board {
-  constructor(public name: string, public columns: Column[]) {}
-}
+
 @Component({
   selector: 'app-board',
   templateUrl: './board.component.html',
   styleUrls: ['./board.component.css'],
 })
 export class BoardComponent implements OnInit {
+  searchInput = '';
   todo: any[] = [];
-  Progress: any[] = [];
+  progress: any[] = [];
   done: any[] = [];
+
+  projectList: any[] = [];
   ticketsArray: any[] = [];
-  statusList: string[] = ['To Do', 'In Progress', 'Done'];
-  doneList: any[] = [];
-  todoList: any[] = [];
-  inProgressList: any[] = [];
-  todos = new Array();
-  inprogresses = new Array();
-  dones = new Array();
-  currentItem: any;
-  constructor(
-    private ticketService: TicketsService,
-    private zone: NgZone,
-    private cdr: ChangeDetectorRef
-  ) {}
+  status: string[] = ['To Do', 'In Progress', 'Done'];
+
+  constructor(private ticketService: TicketsService, public router: Router) {}
+
+  ngOnInit() {
+    this.ticketService.projectTicketsArray$.subscribe((tickets) => {
+      this.ticketsArray = tickets;
+      console.log(this.ticketsArray);
+      this.done = this.ticketsArray.filter((m) => m.status === 'Done');
+      this.todo = this.ticketsArray.filter((m) => m.status === 'To Do');
+      this.progress = this.ticketsArray.filter(
+        (m) => m.status === 'In Progress'
+      );
+    });
+  }
 
   getTasksByStatus(status: string): any[] {
     switch (status) {
       case 'To Do':
         return this.todo;
       case 'In Progress':
-        return this.Progress;
+        return this.progress;
       case 'Done':
         return this.done;
       default:
@@ -53,32 +49,16 @@ export class BoardComponent implements OnInit {
     }
   }
 
-  // deleteTicket(ticket: any) {
-  //   if (this.todo.includes(ticket)) {
-  //     this.todo = this.todo.filter((item) => item !== ticket);
-  //   } else if (this.Progress.includes(ticket)) {
-  //     this.Progress = this.Progress.filter((item) => item !== ticket);
-  //   } else if (this.done.includes(ticket)) {
-  //     this.done = this.done.filter((item) => item !== ticket);
-  //   }
-  // }
-  ngOnInit() {
-    this.ticketService.projectTicketsArray$.subscribe((tickets) => {
-      this.ticketsArray = tickets;
-
-      this.doneList = tickets.filter((m) => m.status === 'Done');
-      console.log('doneList', this.doneList);
-      this.done = this.doneList;
-
-      this.todoList = tickets.filter((m) => m.status === 'To Do');
-      console.log('todoList', this.todoList);
-      this.todo = this.todoList;
-
-      this.inProgressList = tickets.filter((m) => m.status === 'In Progress');
-      console.log('inProgressList', this.inProgressList);
-      this.Progress = this.inProgressList;
-      console.log('ngOnInit', this.ticketsArray);
-    });
+  deleteTicket(ticket: any) {
+    if (this.todo.includes(ticket)) {
+      this.todo = this.todo.filter((item) => item !== ticket);
+    } else if (this.progress.includes(ticket)) {
+      this.progress = this.progress.filter((item) => item !== ticket);
+    } else if (this.done.includes(ticket)) {
+      this.done = this.done.filter((item) => item !== ticket);
+    }
+    this.ticketsArray = this.ticketsArray.filter((item) => item !== ticket);
+    this.ticketService.updateLocalStorage(this.ticketsArray);
   }
 
   drop(event: CdkDragDrop<string[]>) {
@@ -95,6 +75,10 @@ export class BoardComponent implements OnInit {
         event.previousIndex,
         event.currentIndex
       );
+      this.ticketService.updateLocalStorage(this.ticketsArray);
     }
+  }
+  editTicket(item: any) {
+    this.router.navigate(['/ticket'], { queryParams: { id: item.ticketId } });
   }
 }

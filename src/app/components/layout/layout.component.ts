@@ -1,7 +1,8 @@
 import { HttpClient } from '@angular/common/http';
 import { Component } from '@angular/core';
-import { NgbModalConfig, NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModalConfig } from '@ng-bootstrap/ng-bootstrap';
 import { TicketsService } from 'src/app/services/tickets.service';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
   selector: 'app-layout',
@@ -9,35 +10,38 @@ import { TicketsService } from 'src/app/services/tickets.service';
   styleUrls: ['./layout.component.css'],
 })
 export class LayoutComponent {
+  searchInput = '';
+  todo: any[] = [];
+  progress: any[] = [];
+  done: any[] = [];
+
   projectList: any[] = [];
-  userList: any[] = [];
+  ticketsArray: any[] = [];
   status: string[] = ['To Do', 'In Progress', 'Done'];
 
+  userList: any[] = [];
+
   ticketObj: any = {
-    ticketId: 0,
     projectName: '',
+    ticketType: '',
     createdDate: new Date(),
     summary: '',
     status: '',
-    description: '',
     assignedTo: 0,
     createdBy: 0,
-    projectId: 0,
   };
   constructor(
     config: NgbModalConfig,
-    private modalService: NgbModal,
     private http: HttpClient,
-    private ticketsService: TicketsService
+    private ticketsService: TicketsService,
+    private modalService: NgbModal
   ) {
     config.backdrop = 'static';
     config.keyboard = false;
     const loginData = localStorage.getItem('jiraLoginDetails');
     if (loginData != null) {
       const parseData = JSON.parse(loginData);
-      console.log(parseData);
       this.ticketObj.createdBy = parseData.fullName;
-      console.log(this.ticketObj.createdBy);
     }
   }
 
@@ -55,15 +59,41 @@ export class LayoutComponent {
     this.getAllUsers();
   }
 
+  filterTickets() {
+    // console.log(this.searchInput);
+    this.filterBySearchInput(this.searchInput);
+  }
+
+  filterBySearchInput(value: any) {
+    if (value) {
+      const filteredArray = this.ticketsArray.filter((item) =>
+        item.projectName.toLowerCase().includes(value.toLowerCase())
+      );
+
+      this.done = filteredArray.filter((m) => m.status === 'Done');
+      this.todo = filteredArray.filter((m) => m.status === 'To Do');
+      this.progress = filteredArray.filter((m) => m.status === 'In Progress');
+
+      this.ticketsArray = filteredArray;
+    } else {
+      this.ticketsService.projectTicketsArray$.subscribe((tickets) => {
+        this.ticketsArray = tickets;
+      });
+      this.done = this.ticketsArray.filter((m) => m.status === 'Done');
+      this.todo = this.ticketsArray.filter((m) => m.status === 'To Do');
+      this.progress = this.ticketsArray.filter(
+        (m) => m.status === 'In Progress'
+      );
+    }
+  }
   getAllProjects() {
     this.http.get('http://localhost:3000/projectList').subscribe((res: any) => {
-      console.log('res', res);
       this.projectList = res;
     });
   }
+
   getAllUsers() {
     this.http.get('http://localhost:3000/users').subscribe((res: any) => {
-      console.log('res', res);
       this.userList = res;
     });
   }
@@ -73,11 +103,10 @@ export class LayoutComponent {
   }
 
   onTicketCreate() {
-    const newTicketObj = { ...this.ticketObj };
-
-    // Increment ticketId by 1
-    newTicketObj.ticketId++;
-
+    const newTicketObj = {
+      ...this.ticketObj,
+      ticketId: Math.floor(Math.random() * 1000000) + 1,
+    };
     this.ticketsService.handleTickets(newTicketObj);
   }
 }

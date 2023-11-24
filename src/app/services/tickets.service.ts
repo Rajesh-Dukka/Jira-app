@@ -18,7 +18,7 @@ export class TicketsService {
 
   handleTickets(ticket: any) {
     this.allTicketsArray.push(ticket);
-    this.updateLocalStorage();
+    this.updateLocalStorage(this.allTicketsArray);
     this.projectBasedTickets();
   }
 
@@ -34,10 +34,7 @@ export class TicketsService {
     }
   }
 
-  private updateLocalStorage() {
-    localStorage.setItem(
-      'allTicketsArray',
-      JSON.stringify(this.allTicketsArray)
-    );
+  updateLocalStorage(tickets: any) {
+    localStorage.setItem('allTicketsArray', JSON.stringify(tickets));
   }
 }
